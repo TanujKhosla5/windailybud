@@ -1,0 +1,175 @@
+{
+  "identity": {
+    "name": "WindailyBud",
+    "persona": "The Performance Pro",
+    "tone": "Disciplined, Focused, Kinetic, Elite",
+    "aesthetic": "Tactical Minimalism (Whoop/Linear inspired)",
+    "theme_strategy": "Dark Mode Default (Obsidian Base)"
+  },
+  "typography": {
+    "font_family": {
+      "headings": "Manrope, sans-serif",
+      "body": "Inter, sans-serif",
+      "mono": "JetBrains Mono, monospace"
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl font-bold tracking-tight",
+      "h2": "text-3xl font-semibold tracking-tight",
+      "h3": "text-2xl font-semibold tracking-tight",
+      "body_lg": "text-lg leading-relaxed",
+      "body_base": "text-base leading-relaxed text-zinc-300",
+      "body_sm": "text-sm text-zinc-400",
+      "caption": "text-xs text-zinc-500 uppercase tracking-widest font-mono"
+    },
+    "weights": {
+      "regular": 400,
+      "medium": 500,
+      "semibold": 600,
+      "bold": 700
+    }
+  },
+  "colors": {
+    "palette": {
+      "base": {
+        "background": "#09090b",
+        "surface": "#121212",
+        "surface_highlight": "#1e1e20",
+        "border": "#27272a"
+      },
+      "text": {
+        "primary": "#fafafa",
+        "secondary": "#a1a1aa",
+        "muted": "#52525b"
+      },
+      "accents": {
+        "urgent": "#ef4444",
+        "important": "#3b82f6",
+        "done": "#10b981",
+        "in_progress": "#f59e0b",
+        "neutral": "#71717a"
+      },
+      "gradients": {
+        "glow_urgent": "linear-gradient(135deg, rgba(239,68,68,0.2) 0%, rgba(239,68,68,0) 100%)",
+        "glow_important": "linear-gradient(135deg, rgba(59,130,246,0.2) 0%, rgba(59,130,246,0) 100%)",
+        "glow_done": "linear-gradient(135deg, rgba(16,185,129,0.2) 0%, rgba(16,185,129,0) 100%)"
+      }
+    },
+    "semantic_mapping": {
+      "urgent_important": "border-red-500/50 bg-red-950/10 text-red-100",
+      "not_urgent_important": "border-blue-500/50 bg-blue-950/10 text-blue-100",
+      "urgent_not_important": "border-amber-500/50 bg-amber-950/10 text-amber-100",
+      "not_urgent_not_important": "border-zinc-700/50 bg-zinc-900/50 text-zinc-400"
+    }
+  },
+  "layout_strategy": {
+    "dashboard": {
+      "grid_type": "Bento Grid Mode B",
+      "cols": "grid-cols-1 md:grid-cols-4 lg:grid-cols-4",
+      "gap": "gap-4 md:gap-6",
+      "padding": "p-4 md:p-8"
+    },
+    "eisenhower_matrix": {
+      "structure": "Grid 2x2 (Mobile: Stacked 1x1)",
+      "areas": [
+        "do_first (Top-Left)",
+        "schedule (Top-Right)",
+        "delegate (Bottom-Left)",
+        "delete (Bottom-Right)"
+      ],
+      "mobile_behavior": "Tabs or Vertical Stack"
+    },
+    "spacing": {
+      "container_padding": "p-4 md:p-8",
+      "section_gap": "gap-8"
+    }
+  },
+  "components": {
+    "Card": {
+      "base": "bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden",
+      "hover": "hover:border-zinc-700 transition-colors duration-200",
+      "shadow": "shadow-none"
+    },
+    "Button": {
+      "primary": "bg-zinc-100 text-zinc-950 hover:bg-zinc-200 rounded-md font-medium px-4 py-2",
+      "secondary": "bg-zinc-800 text-zinc-100 hover:bg-zinc-700 rounded-md font-medium px-4 py-2",
+      "destructive": "bg-red-900/20 text-red-400 hover:bg-red-900/40 border border-red-900/50 rounded-md",
+      "ghost": "hover:bg-zinc-800 text-zinc-400 hover:text-zinc-100 rounded-md"
+    },
+    "Badge": {
+      "base": "px-2 py-0.5 rounded-full text-xs font-medium border",
+      "urgent": "bg-red-950/30 border-red-900 text-red-400",
+      "important": "bg-blue-950/30 border-blue-900 text-blue-400",
+      "work": "bg-purple-950/30 border-purple-900 text-purple-400",
+      "health": "bg-emerald-950/30 border-emerald-900 text-emerald-400"
+    },
+    "Input": {
+      "base": "bg-zinc-950 border-zinc-800 focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 rounded-md h-10 px-3 text-sm placeholder:text-zinc-600"
+    }
+  },
+  "visual_enhancers": {
+    "textures": "Subtle noise overlay (opacity 0.03) on background to reduce banding",
+    "glassmorphism": "backdrop-blur-md bg-zinc-950/80 border-b border-zinc-800 for sticky headers",
+    "borders": "1px solid borders. Use 'divide-y divide-zinc-800' for lists.",
+    "shadows": "None by default. Use 'shadow-[0_0_15px_rgba(59,130,246,0.15)]' for active states or focus."
+  },
+  "motion": {
+    "library": "framer-motion",
+    "preferences": {
+      "reduced_motion": "Respect prefers-reduced-motion",
+      "duration": "0.2s",
+      "ease": "ease-out"
+    },
+    "interactions": {
+      "hover_lift": "translate-y-[-1px]",
+      "active_scale": "scale-95",
+      "list_entrance": "staggerChildren: 0.05"
+    }
+  },
+  "accessibility": {
+    "contrast_check": "Ensure text-zinc-400 is readable on bg-zinc-900. Use text-zinc-300 if needed.",
+    "focus_states": "ring-2 ring-zinc-100 ring-offset-2 ring-offset-zinc-950",
+    "touch_targets": "Minimum 44px for mobile interactions"
+  },
+  "assets": {
+    "images": [
+      {
+        "category": "Onboarding/Welcome",
+        "description": "Abstract Minimalist Waves (Dark)",
+        "url": "https://images.unsplash.com/photo-1649182784901-48f5f2d40ecc?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njl8MHwxfHNlYXJjaHwxfHxtaW5pbWFsaXN0JTIwZGFyayUyMGFic3RyYWN0JTIwYXJjaGl0ZWN0dXJlJTIwZ2VvbWV0cmljfGVufDB8fHx8MTc3MjI5Nzg0N3ww&ixlib=rb-4.1.0&q=85",
+        "usage": "Background for Login/Register page with overlay"
+      },
+      {
+        "category": "Empty State",
+        "description": "Focused Minimalist Profile",
+        "url": "https://images.unsplash.com/photo-1723596877553-b152472eb82c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2Njd8MHwxfHNlYXJjaHwxfHxmb2N1c2VkJTIwYXRobGV0ZSUyMHNpbGhvdWV0dGUlMjBkYXJrJTIwbW9kZXxlbnwwfHx8fDE3NzIyOTc4NDh8MA&ixlib=rb-4.1.0&q=85",
+        "usage": "Profile placeholder or empty dashboard state"
+      }
+    ],
+    "icons": {
+      "library": "lucide-react",
+      "style": "Stroke width 1.5px (Thin/Elegant)",
+      "mapping": {
+        "urgent": "Flame / AlertCircle",
+        "important": "Star / Zap",
+        "tasks": "CheckSquare",
+        "habits": "Activity / Repeat",
+        "analytics": "BarChart2 / TrendingUp",
+        "settings": "Settings / Sliders"
+      }
+    }
+  },
+  "tech_stack_recommendations": {
+    "charts": "recharts (Customized to match Zinc palette)",
+    "heatmap": "react-activity-calendar (GitHub style)",
+    "date_handling": "date-fns",
+    "state_management": "React Context + Hooks (Keep it simple)",
+    "forms": "react-hook-form + zod"
+  },
+  "universal_guidelines": [
+    "Do not use gradients for backgrounds, only for subtle glows or borders.",
+    "Avoid centering text in main content areas; left-align for readability.",
+    "Use data-testid attributes for all interactive elements.",
+    "Ensure dark mode is the default and polished experience.",
+    "Mobile responsiveness is critical: Check tap targets and padding."
+  ]
+}
