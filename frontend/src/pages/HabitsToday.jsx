@@ -6,12 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
 import { Progress } from '../components/ui/progress';
 import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { Switch } from '../components/ui/switch';
-import { Slider } from '../components/ui/slider';
 import { 
   CalendarDays, 
-  Check, 
-  X,
   ChevronRight,
   Pill,
   Dumbbell,
@@ -21,7 +17,7 @@ import {
   Users,
   BookOpen
 } from 'lucide-react';
-import { format, isToday, parseISO } from 'date-fns';
+import { format, isToday } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/ui/collapsible';
 
 const CATEGORY_CONFIG = {
@@ -247,10 +243,8 @@ export default function HabitsToday() {
                           key={habit.id}
                           habit={habit}
                           isDone={isDone}
-                          percent={percent}
                           onComplete={() => handleLogHabit(habit, true, 100)}
                           onSkip={() => handleLogHabit(habit, false, 0)}
-                          onPercentChange={(p) => handleLogHabit(habit, p >= 50, p)}
                         />
                       );
                     })}
@@ -274,12 +268,12 @@ export default function HabitsToday() {
   );
 }
 
-function HabitRow({ habit, isDone, percent, onComplete, onSkip, onPercentChange }) {
-  const [showSlider, setShowSlider] = useState(false);
-  const [sliderValue, setSliderValue] = useState(percent || 0);
+function HabitRow({ habit, isDone, onComplete, onSkip }) {
+  const isSupplementation = habit.category === 'supplementation';
+  const hasResponse = isDone !== undefined;
 
   const getTargetDisplay = () => {
-    if (habit.category === 'supplementation' && habit.dose_tablets && habit.dose_per_tablet) {
+    if (isSupplementation && habit.dose_tablets && habit.dose_per_tablet) {
       const total = habit.dose_tablets * habit.dose_per_tablet;
       return `${total}${habit.dose_unit || 'mg'}`;
     }
@@ -295,65 +289,31 @@ function HabitRow({ habit, isDone, percent, onComplete, onSkip, onPercentChange 
         </div>
         
         <div className="flex items-center gap-2">
-          {isDone !== undefined && (
-            <span className={`text-sm font-medium ${isDone ? 'text-emerald-400' : 'text-zinc-500'}`}>
-              {percent}%
-            </span>
-          )}
+          <button
+            onClick={onSkip}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              hasResponse && !isDone
+                ? 'bg-red-500/20 text-red-400 border border-red-500/50'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-transparent'
+            }`}
+            data-testid={`habit-skip-${habit.id}`}
+          >
+            {isSupplementation ? 'Not Taken' : 'Not Done'}
+          </button>
           
           <button
-            onClick={() => setShowSlider(!showSlider)}
-            className={`w-10 h-10 rounded-lg flex items-center justify-center transition-colors ${
-              isDone 
-                ? 'bg-emerald-500/20 text-emerald-400' 
-                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+            onClick={onComplete}
+            className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              isDone
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50'
+                : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700 border border-transparent'
             }`}
-            data-testid={`habit-toggle-${habit.id}`}
+            data-testid={`habit-complete-${habit.id}`}
           >
-            {isDone ? <Check className="w-5 h-5" /> : <Check className="w-5 h-5" />}
+            {isSupplementation ? 'Taken' : 'Done'}
           </button>
         </div>
       </div>
-      
-      {showSlider && (
-        <div className="mt-4 p-4 bg-zinc-800/50 rounded-lg animate-slide-up">
-          <p className="text-sm text-zinc-400 mb-3">How much did you achieve?</p>
-          <Slider
-            value={[sliderValue]}
-            onValueChange={([v]) => setSliderValue(v)}
-            max={100}
-            step={10}
-            className="mb-4"
-          />
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-bold text-zinc-100">{sliderValue}%</span>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  onSkip();
-                  setShowSlider(false);
-                }}
-                className="border-zinc-700"
-              >
-                <X className="w-4 h-4 mr-1" /> Skip
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => {
-                  onPercentChange(sliderValue);
-                  setShowSlider(false);
-                }}
-                className="bg-emerald-600 hover:bg-emerald-500"
-                data-testid={`habit-save-${habit.id}`}
-              >
-                <Check className="w-4 h-4 mr-1" /> Save
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
