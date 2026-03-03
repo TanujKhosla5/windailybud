@@ -214,79 +214,93 @@ export default function HabitsManage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-zinc-300">Goal (days/week)</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={7}
-                    value={newHabit.goal_days_per_week}
-                    onChange={(e) => setNewHabit({ ...newHabit, goal_days_per_week: parseInt(e.target.value) || 7 })}
-                    className="bg-zinc-950 border-zinc-800"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-300">Unit</Label>
-                  <Select value={newHabit.unit} onValueChange={(v) => setNewHabit({ ...newHabit, unit: v })}>
-                    <SelectTrigger className="bg-zinc-950 border-zinc-800">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-zinc-900 border-zinc-800">
-                      {UNITS.map(u => (
-                        <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              
               <div>
-                <Label className="text-zinc-300">Target per Session</Label>
+                <Label className="text-zinc-300">Goal (days/week)</Label>
                 <Input
                   type="number"
                   min={1}
-                  value={newHabit.target_per_session}
-                  onChange={(e) => setNewHabit({ ...newHabit, target_per_session: parseFloat(e.target.value) || 1 })}
+                  max={7}
+                  value={newHabit.goal_days_per_week}
+                  onChange={(e) => setNewHabit({ ...newHabit, goal_days_per_week: parseInt(e.target.value) || 7 })}
                   className="bg-zinc-950 border-zinc-800"
                 />
               </div>
               
+              {activeCategory !== 'supplementation' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-zinc-300">Target per Session</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={newHabit.target_per_session}
+                        onChange={(e) => setNewHabit({ ...newHabit, target_per_session: parseFloat(e.target.value) || 1 })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Unit</Label>
+                      <Select value={newHabit.unit} onValueChange={(v) => setNewHabit({ ...newHabit, unit: v })}>
+                        <SelectTrigger className="bg-zinc-950 border-zinc-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                          {UNITS.map(u => (
+                            <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
+              
               {activeCategory === 'supplementation' && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-zinc-300">Tablets/day</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={newHabit.dose_tablets || ''}
-                      onChange={(e) => setNewHabit({ ...newHabit, dose_tablets: parseInt(e.target.value) || null })}
-                      className="bg-zinc-950 border-zinc-800"
-                    />
+                <>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-zinc-300">Tablets per day</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={newHabit.dose_tablets || ''}
+                        onChange={(e) => setNewHabit({ ...newHabit, dose_tablets: parseInt(e.target.value) || null })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Dose per tablet</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={newHabit.dose_per_tablet || ''}
+                        onChange={(e) => setNewHabit({ ...newHabit, dose_per_tablet: parseFloat(e.target.value) || null })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Unit</Label>
+                      <Select value={newHabit.dose_unit || 'mg'} onValueChange={(v) => setNewHabit({ ...newHabit, dose_unit: v })}>
+                        <SelectTrigger className="bg-zinc-950 border-zinc-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                          <SelectItem value="mg">mg</SelectItem>
+                          <SelectItem value="mcg">mcg</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-zinc-300">Dose/tablet</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={newHabit.dose_per_tablet || ''}
-                      onChange={(e) => setNewHabit({ ...newHabit, dose_per_tablet: parseFloat(e.target.value) || null })}
-                      className="bg-zinc-950 border-zinc-800"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-zinc-300">Unit</Label>
-                    <Select value={newHabit.dose_unit || 'mg'} onValueChange={(v) => setNewHabit({ ...newHabit, dose_unit: v })}>
-                      <SelectTrigger className="bg-zinc-950 border-zinc-800">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="mg">mg</SelectItem>
-                        <SelectItem value="mcg">mcg</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                  {newHabit.dose_tablets && newHabit.dose_per_tablet && (
+                    <div className="p-3 bg-zinc-800/50 rounded-lg">
+                      <Label className="text-zinc-400 text-sm">Total dose per day</Label>
+                      <p className="text-lg font-semibold text-zinc-100">
+                        {newHabit.dose_tablets * newHabit.dose_per_tablet} {newHabit.dose_unit || 'mg'}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
               
               <div>
@@ -437,79 +451,93 @@ export default function HabitsManage() {
                 />
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-zinc-300">Goal (days/week)</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={7}
-                    value={editingHabit.goal_days_per_week}
-                    onChange={(e) => setEditingHabit({ ...editingHabit, goal_days_per_week: parseInt(e.target.value) || 7 })}
-                    className="bg-zinc-950 border-zinc-800"
-                  />
-                </div>
-                <div>
-                  <Label className="text-zinc-300">Target per Session</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={editingHabit.target_per_session}
-                    onChange={(e) => setEditingHabit({ ...editingHabit, target_per_session: parseFloat(e.target.value) || 1 })}
-                    className="bg-zinc-950 border-zinc-800"
-                  />
-                </div>
+              <div>
+                <Label className="text-zinc-300">Goal (days/week)</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={7}
+                  value={editingHabit.goal_days_per_week}
+                  onChange={(e) => setEditingHabit({ ...editingHabit, goal_days_per_week: parseInt(e.target.value) || 7 })}
+                  className="bg-zinc-950 border-zinc-800"
+                />
               </div>
               
-              <div>
-                <Label className="text-zinc-300">Unit</Label>
-                <Select value={editingHabit.unit} onValueChange={(v) => setEditingHabit({ ...editingHabit, unit: v })}>
-                  <SelectTrigger className="bg-zinc-950 border-zinc-800">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-zinc-900 border-zinc-800">
-                    {UNITS.map(u => (
-                      <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {editingHabit.category !== 'supplementation' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-zinc-300">Target per Session</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={editingHabit.target_per_session}
+                        onChange={(e) => setEditingHabit({ ...editingHabit, target_per_session: parseFloat(e.target.value) || 1 })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Unit</Label>
+                      <Select value={editingHabit.unit} onValueChange={(v) => setEditingHabit({ ...editingHabit, unit: v })}>
+                        <SelectTrigger className="bg-zinc-950 border-zinc-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                          {UNITS.map(u => (
+                            <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
               
               {editingHabit.category === 'supplementation' && (
-                <div className="grid grid-cols-3 gap-4">
-                  <div>
-                    <Label className="text-zinc-300">Tablets/day</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      value={editingHabit.dose_tablets || ''}
-                      onChange={(e) => setEditingHabit({ ...editingHabit, dose_tablets: parseInt(e.target.value) || null })}
-                      className="bg-zinc-950 border-zinc-800"
-                    />
+                <>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <Label className="text-zinc-300">Tablets per day</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={editingHabit.dose_tablets || ''}
+                        onChange={(e) => setEditingHabit({ ...editingHabit, dose_tablets: parseInt(e.target.value) || null })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Dose per tablet</Label>
+                      <Input
+                        type="number"
+                        min={0}
+                        value={editingHabit.dose_per_tablet || ''}
+                        onChange={(e) => setEditingHabit({ ...editingHabit, dose_per_tablet: parseFloat(e.target.value) || null })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Unit</Label>
+                      <Select value={editingHabit.dose_unit || 'mg'} onValueChange={(v) => setEditingHabit({ ...editingHabit, dose_unit: v })}>
+                        <SelectTrigger className="bg-zinc-950 border-zinc-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                          <SelectItem value="mg">mg</SelectItem>
+                          <SelectItem value="mcg">mcg</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                  <div>
-                    <Label className="text-zinc-300">Dose/tablet</Label>
-                    <Input
-                      type="number"
-                      min={0}
-                      value={editingHabit.dose_per_tablet || ''}
-                      onChange={(e) => setEditingHabit({ ...editingHabit, dose_per_tablet: parseFloat(e.target.value) || null })}
-                      className="bg-zinc-950 border-zinc-800"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-zinc-300">Unit</Label>
-                    <Select value={editingHabit.dose_unit || 'mg'} onValueChange={(v) => setEditingHabit({ ...editingHabit, dose_unit: v })}>
-                      <SelectTrigger className="bg-zinc-950 border-zinc-800">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-zinc-900 border-zinc-800">
-                        <SelectItem value="mg">mg</SelectItem>
-                        <SelectItem value="mcg">mcg</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+                  {editingHabit.dose_tablets && editingHabit.dose_per_tablet && (
+                    <div className="p-3 bg-zinc-800/50 rounded-lg">
+                      <Label className="text-zinc-400 text-sm">Total dose per day</Label>
+                      <p className="text-lg font-semibold text-zinc-100">
+                        {editingHabit.dose_tablets * editingHabit.dose_per_tablet} {editingHabit.dose_unit || 'mg'}
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
               
               <div>
