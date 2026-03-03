@@ -226,7 +226,7 @@ export default function HabitsManage() {
                 />
               </div>
               
-              {activeCategory !== 'supplementation' && (
+              {activeCategory !== 'supplementation' && activeCategory !== 'social' && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -463,7 +463,7 @@ export default function HabitsManage() {
                 />
               </div>
               
-              {editingHabit.category !== 'supplementation' && (
+              {editingHabit.category !== 'supplementation' && editingHabit.category !== 'social' && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
