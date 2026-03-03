@@ -14,7 +14,8 @@ import {
   Wind,
   Heart,
   Users,
-  BookOpen
+  BookOpen,
+  Droplets
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -36,6 +37,7 @@ const CATEGORY_CONFIG = {
   mental: { icon: Heart, color: '#ec4899', label: 'Mental Health' },
   social: { icon: Users, color: '#10b981', label: 'Social' },
   learning: { icon: BookOpen, color: '#3b82f6', label: 'Learning' },
+  water_intake: { icon: Droplets, color: '#0ea5e9', label: 'Water Intake' },
 };
 
 export default function HabitsProgress() {

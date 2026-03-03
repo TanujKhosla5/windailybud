@@ -122,6 +122,8 @@ class HabitCreate(BaseModel):
     dose_tablets: Optional[int] = None
     dose_per_tablet: Optional[float] = None
     dose_unit: Optional[str] = None
+    water_target: Optional[float] = None
+    water_unit: Optional[str] = None
 
 class HabitUpdate(BaseModel):
     name: Optional[str] = None
@@ -133,6 +135,8 @@ class HabitUpdate(BaseModel):
     dose_tablets: Optional[int] = None
     dose_per_tablet: Optional[float] = None
     dose_unit: Optional[str] = None
+    water_target: Optional[float] = None
+    water_unit: Optional[str] = None
 
 class HabitResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
@@ -149,6 +153,8 @@ class HabitResponse(BaseModel):
     dose_tablets: Optional[int] = None
     dose_per_tablet: Optional[float] = None
     dose_unit: Optional[str] = None
+    water_target: Optional[float] = None
+    water_unit: Optional[str] = None
     created_at: str
     updated_at: str
 
@@ -478,6 +484,8 @@ async def create_habit(habit_data: HabitCreate, current_user: dict = Depends(get
         'dose_tablets': habit_data.dose_tablets,
         'dose_per_tablet': habit_data.dose_per_tablet,
         'dose_unit': habit_data.dose_unit,
+        'water_target': habit_data.water_target,
+        'water_unit': habit_data.water_unit,
         'created_at': now,
         'updated_at': now
     }

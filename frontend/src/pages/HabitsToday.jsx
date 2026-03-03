@@ -15,7 +15,8 @@ import {
   Wind,
   Heart,
   Users,
-  BookOpen
+  BookOpen,
+  Droplets
 } from 'lucide-react';
 import { format, isToday } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../components/ui/collapsible';
@@ -28,6 +29,7 @@ const CATEGORY_CONFIG = {
   mental: { icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/10' },
   social: { icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
   learning: { icon: BookOpen, color: 'text-blue-400', bg: 'bg-blue-500/10' },
+  water_intake: { icon: Droplets, color: 'text-sky-400', bg: 'bg-sky-500/10' },
 };
 
 const CATEGORY_LABELS = {
@@ -38,6 +40,7 @@ const CATEGORY_LABELS = {
   mental: 'Mental Health',
   social: 'Social',
   learning: 'Learning',
+  water_intake: 'Water Intake',
 };
 
 const DAY_MAP = {
@@ -56,7 +59,8 @@ export default function HabitsToday() {
     lung: true,
     mental: true,
     social: true,
-    learning: true
+    learning: true,
+    water_intake: true
   });
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');

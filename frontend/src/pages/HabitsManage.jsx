@@ -21,7 +21,8 @@ import {
   Wind,
   Heart,
   Users,
-  BookOpen
+  BookOpen,
+  Droplets
 } from 'lucide-react';
 
 const CATEGORY_CONFIG = {
@@ -32,6 +33,7 @@ const CATEGORY_CONFIG = {
   mental: { icon: Heart, color: 'text-pink-400', bg: 'bg-pink-500/10', label: 'Mental Health' },
   social: { icon: Users, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Social' },
   learning: { icon: BookOpen, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Learning' },
+  water_intake: { icon: Droplets, color: 'text-sky-400', bg: 'bg-sky-500/10', label: 'Water Intake' },
 };
 
 const DAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
@@ -42,6 +44,11 @@ const UNITS = [
   { value: 'km', label: 'Kilometres' },
   { value: 'reps', label: 'Reps' },
   { value: 'sets', label: 'Sets' },
+];
+
+const WATER_UNITS = [
+  { value: 'ml', label: 'Millilitres (ml)' },
+  { value: 'l', label: 'Litres (l)' },
 ];
 
 export default function HabitsManage() {
@@ -59,7 +66,9 @@ export default function HabitsManage() {
     target_days: [...DAYS],
     dose_tablets: null,
     dose_per_tablet: null,
-    dose_unit: 'mg'
+    dose_unit: 'mg',
+    water_target: null,
+    water_unit: 'ml'
   });
 
   const fetchHabits = async () => {
@@ -226,7 +235,7 @@ export default function HabitsManage() {
                 />
               </div>
               
-              {activeCategory !== 'supplementation' && activeCategory !== 'social' && (
+              {activeCategory !== 'supplementation' && activeCategory !== 'social' && activeCategory !== 'water_intake' && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -303,24 +312,56 @@ export default function HabitsManage() {
                 </>
               )}
               
-              <div>
-                <Label className="text-zinc-300">Target Days</Label>
-                <div className="flex gap-2 mt-2">
-                  {DAYS.map(day => (
-                    <button
-                      key={day}
-                      onClick={() => toggleDay(day, true)}
-                      className={`w-10 h-10 rounded-lg text-xs font-medium transition-colors ${
-                        newHabit.target_days.includes(day)
-                          ? 'bg-zinc-100 text-zinc-950'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
+              {activeCategory === 'water_intake' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-zinc-300">Target per day</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={newHabit.water_target || ''}
+                        onChange={(e) => setNewHabit({ ...newHabit, water_target: parseFloat(e.target.value) || null })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Unit</Label>
+                      <Select value={newHabit.water_unit || 'ml'} onValueChange={(v) => setNewHabit({ ...newHabit, water_unit: v })}>
+                        <SelectTrigger className="bg-zinc-950 border-zinc-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                          {WATER_UNITS.map(u => (
+                            <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {activeCategory !== 'water_intake' && (
+                <div>
+                  <Label className="text-zinc-300">Target Days</Label>
+                  <div className="flex gap-2 mt-2">
+                    {DAYS.map(day => (
+                      <button
+                        key={day}
+                        onClick={() => toggleDay(day, true)}
+                        className={`w-10 h-10 rounded-lg text-xs font-medium transition-colors ${
+                          newHabit.target_days.includes(day)
+                            ? 'bg-zinc-100 text-zinc-950'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }} className="border-zinc-700">
@@ -463,7 +504,7 @@ export default function HabitsManage() {
                 />
               </div>
               
-              {editingHabit.category !== 'supplementation' && editingHabit.category !== 'social' && (
+              {editingHabit.category !== 'supplementation' && editingHabit.category !== 'social' && editingHabit.category !== 'water_intake' && (
                 <>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -540,24 +581,56 @@ export default function HabitsManage() {
                 </>
               )}
               
-              <div>
-                <Label className="text-zinc-300">Target Days</Label>
-                <div className="flex gap-2 mt-2">
-                  {DAYS.map(day => (
-                    <button
-                      key={day}
-                      onClick={() => toggleDay(day, false)}
-                      className={`w-10 h-10 rounded-lg text-xs font-medium transition-colors ${
-                        editingHabit.target_days.includes(day)
-                          ? 'bg-zinc-100 text-zinc-950'
-                          : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
-                      }`}
-                    >
-                      {day}
-                    </button>
-                  ))}
+              {editingHabit.category === 'water_intake' && (
+                <>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-zinc-300">Target per day</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        value={editingHabit.water_target || ''}
+                        onChange={(e) => setEditingHabit({ ...editingHabit, water_target: parseFloat(e.target.value) || null })}
+                        className="bg-zinc-950 border-zinc-800"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-zinc-300">Unit</Label>
+                      <Select value={editingHabit.water_unit || 'ml'} onValueChange={(v) => setEditingHabit({ ...editingHabit, water_unit: v })}>
+                        <SelectTrigger className="bg-zinc-950 border-zinc-800">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-zinc-900 border-zinc-800">
+                          {WATER_UNITS.map(u => (
+                            <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </>
+              )}
+              
+              {editingHabit.category !== 'water_intake' && (
+                <div>
+                  <Label className="text-zinc-300">Target Days</Label>
+                  <div className="flex gap-2 mt-2">
+                    {DAYS.map(day => (
+                      <button
+                        key={day}
+                        onClick={() => toggleDay(day, false)}
+                        className={`w-10 h-10 rounded-lg text-xs font-medium transition-colors ${
+                          editingHabit.target_days.includes(day)
+                            ? 'bg-zinc-100 text-zinc-950'
+                            : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'
+                        }`}
+                      >
+                        {day}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
               
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setEditingHabit(null)} className="border-zinc-700">
