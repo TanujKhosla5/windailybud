@@ -226,6 +226,8 @@ DEFAULT_HABITS = {
         {"name": "Magnesium Glycinate", "unit": "count", "target_per_session": 1},
         {"name": "Protein Shake", "unit": "count", "target_per_session": 1},
         {"name": "Creatine", "unit": "count", "target_per_session": 1},
+        {"name": "L-Ergothioneine", "unit": "count", "target_per_session": 1},
+        {"name": "P5P 50mg", "unit": "count", "target_per_session": 1},
     ],
     "physical": [
         {"name": "Running", "unit": "km", "target_per_session": 5},

@@ -420,26 +420,43 @@ export default function HabitsManage() {
                           <div className="flex-1 min-w-0">
                             <h3 className="font-medium text-zinc-100 truncate">{habit.name}</h3>
                             <div className="flex items-center gap-3 text-sm text-zinc-500">
-                              <span>{habit.target_per_session} {habit.unit}</span>
-                              <span>{habit.goal_days_per_week}x/week</span>
-                              {habit.dose_tablets && habit.dose_per_tablet && (
-                                <span>{habit.dose_tablets * habit.dose_per_tablet}{habit.dose_unit}</span>
+                              {habit.category === 'supplementation' ? (
+                                <>
+                                  <span>{habit.goal_days_per_week}x/week</span>
+                                  {habit.dose_tablets && habit.dose_per_tablet && (
+                                    <span>{habit.dose_tablets * habit.dose_per_tablet} {habit.dose_unit || 'mg'}</span>
+                                  )}
+                                </>
+                              ) : habit.category === 'water_intake' ? (
+                                <>
+                                  <span>{habit.goal_days_per_week}x/week</span>
+                                  {habit.water_target && (
+                                    <span>{habit.water_target} {habit.water_unit || 'ml'}</span>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span>{habit.target_per_session} {habit.unit}</span>
+                                  <span>{habit.goal_days_per_week}x/week</span>
+                                </>
                               )}
                             </div>
-                            <div className="flex gap-1 mt-2">
-                              {DAYS.map(day => (
-                                <span
-                                  key={day}
-                                  className={`w-6 h-6 rounded text-xs flex items-center justify-center ${
-                                    habit.target_days.includes(day)
-                                      ? 'bg-zinc-700 text-zinc-300'
-                                      : 'bg-zinc-900 text-zinc-600'
-                                  }`}
-                                >
-                                  {day.charAt(0)}
-                                </span>
-                              ))}
-                            </div>
+                            {habit.category !== 'water_intake' && (
+                              <div className="flex gap-1 mt-2">
+                                {DAYS.map(day => (
+                                  <span
+                                    key={day}
+                                    className={`w-6 h-6 rounded text-xs flex items-center justify-center ${
+                                      habit.target_days?.includes(day)
+                                        ? 'bg-zinc-700 text-zinc-300'
+                                        : 'bg-zinc-900 text-zinc-600'
+                                    }`}
+                                  >
+                                    {day.charAt(0)}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         </div>
                         
