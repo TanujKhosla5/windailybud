@@ -234,6 +234,7 @@ export default function TodosOpen() {
   const [view, setView] = useState('matrix');
   const [filterTag, setFilterTag] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [newTagInput, setNewTagInput] = useState('');
   const [newTodo, setNewTodo] = useState({
     title: '',
     notes: '',
@@ -262,6 +263,25 @@ export default function TodosOpen() {
   useEffect(() => {
     fetchData();
   }, []);
+
+  const handleCreateTag = async () => {
+    if (!newTagInput.trim()) return;
+    try {
+      const response = await tagsApi.create({ label: newTagInput.trim() });
+      setTags([...tags, response.data]);
+      setNewTodo({ ...newTodo, tags: [...(newTodo.tags || []), newTagInput.trim()] });
+      setNewTagInput('');
+      toast.success('Tag created');
+    } catch (error) {
+      if (error.response?.data?.detail === 'Tag already exists') {
+        // Tag exists, just add it to selection
+        setNewTodo({ ...newTodo, tags: [...(newTodo.tags || []), newTagInput.trim()] });
+        setNewTagInput('');
+      } else {
+        toast.error('Failed to create tag');
+      }
+    }
+  };
 
   const handleCreate = async () => {
     if (!newTodo.title.trim()) {
@@ -392,6 +412,30 @@ export default function TodosOpen() {
                         {tag.label}
                       </button>
                     ))}
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Input
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      placeholder="Add new tag..."
+                      className="bg-zinc-950 border-zinc-800 flex-1"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleCreateTag();
+                        }
+                      }}
+                      data-testid="new-tag-input"
+                    />
+                    <Button 
+                      type="button"
+                      onClick={handleCreateTag}
+                      variant="outline" 
+                      className="border-zinc-700"
+                      data-testid="add-tag-btn"
+                    >
+                      <Plus className="w-4 h-4" />
+                    </Button>
                   </div>
                 </div>
                 
