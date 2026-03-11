@@ -237,6 +237,11 @@ export default function HabitsProgress() {
           <CardTitle className="text-zinc-100">Habit Details</CardTitle>
         </CardHeader>
         <CardContent>
+          {/* Header Row */}
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-zinc-800">
+            <span className="text-sm font-medium text-zinc-400">Habit</span>
+            <span className="text-sm font-medium text-zinc-400">Weekly Target %</span>
+          </div>
           <div className="space-y-4">
             {analytics?.habits?.map(habit => {
               const config = CATEGORY_CONFIG[habit.category];
