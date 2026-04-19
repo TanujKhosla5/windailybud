@@ -14,7 +14,8 @@ import {
   CheckCircle2,
   CalendarDays,
   TrendingUp,
-  ListTodo
+  ListTodo,
+  Trophy
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { ScrollArea } from './ui/scroll-area';
@@ -44,6 +45,13 @@ const navigation = [
       { name: 'Today', href: '/habits/today', icon: CalendarDays },
       { name: 'My Progress', href: '/habits/progress', icon: TrendingUp },
       { name: 'Manage Habits', href: '/habits/manage', icon: Settings },
+    ]
+  },
+  {
+    title: 'Activities',
+    icon: Trophy,
+    items: [
+      { name: 'Log & Search', href: '/activities', icon: Trophy },
     ]
   }
 ];

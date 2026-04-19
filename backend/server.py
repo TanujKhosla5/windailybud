@@ -182,6 +182,44 @@ class HabitLogResponse(BaseModel):
     notes: Optional[str] = None
     created_at: str
 
+# Activity Type Models
+class ActivityTypeCreate(BaseModel):
+    name: str
+
+class ActivityTypeResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    user_id: str
+    name: str
+    is_default: bool
+    created_at: str
+
+# Activity Log Models
+class ActivityLogCreate(BaseModel):
+    activity_type_id: str
+    activity_date: str
+    location: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    players: List[str] = []
+
+class ActivityLogUpdate(BaseModel):
+    activity_date: Optional[str] = None
+    location: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    players: Optional[List[str]] = None
+
+class ActivityLogResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    user_id: str
+    activity_type_id: str
+    activity_type_name: Optional[str] = None
+    activity_date: str
+    location: Optional[str] = None
+    duration_minutes: Optional[int] = None
+    players: List[str] = []
+    created_at: str
+
 # ============== AUTH HELPERS ==============
 
 def hash_password(password: str) -> str:
@@ -262,6 +300,8 @@ DEFAULT_HABITS = {
     ],
 }
 
+DEFAULT_ACTIVITIES = ["Padel", "Poker", "Pickleball", "Squash"]
+
 async def seed_default_data(user_id: str):
     # Create default tags
     for label in DEFAULT_TAGS:
@@ -299,6 +339,19 @@ async def seed_default_data(user_id: str):
                     'updated_at': datetime.now(timezone.utc).isoformat()
                 }
                 await db.habits.insert_one(habit)
+    
+    # Create default activity types
+    for activity_name in DEFAULT_ACTIVITIES:
+        existing = await db.activity_types.find_one({'user_id': user_id, 'name': activity_name})
+        if not existing:
+            activity_type = {
+                'id': str(uuid.uuid4()),
+                'user_id': user_id,
+                'name': activity_name,
+                'is_default': True,
+                'created_at': datetime.now(timezone.utc).isoformat()
+            }
+            await db.activity_types.insert_one(activity_type)
 
 # ============== AUTH ROUTES ==============
 
@@ -674,6 +727,117 @@ async def root():
 @api_router.get("/health")
 async def health_check():
     return {"status": "healthy"}
+
+# ============== ACTIVITY TYPE ROUTES ==============
+
+@api_router.get("/activity-types", response_model=List[ActivityTypeResponse])
+async def get_activity_types(current_user: dict = Depends(get_current_user)):
+    types = await db.activity_types.find({'user_id': current_user['id']}, {'_id': 0}).to_list(100)
+    return types
+
+@api_router.post("/activity-types", response_model=ActivityTypeResponse)
+async def create_activity_type(data: ActivityTypeCreate, current_user: dict = Depends(get_current_user)):
+    existing = await db.activity_types.find_one({'user_id': current_user['id'], 'name': data.name})
+    if existing:
+        raise HTTPException(status_code=400, detail="Activity type already exists")
+    
+    activity_type = {
+        'id': str(uuid.uuid4()),
+        'user_id': current_user['id'],
+        'name': data.name,
+        'is_default': False,
+        'created_at': datetime.now(timezone.utc).isoformat()
+    }
+    await db.activity_types.insert_one(activity_type)
+    del activity_type['_id']
+    return activity_type
+
+@api_router.delete("/activity-types/{type_id}")
+async def delete_activity_type(type_id: str, current_user: dict = Depends(get_current_user)):
+    activity_type = await db.activity_types.find_one({'id': type_id, 'user_id': current_user['id']})
+    if not activity_type:
+        raise HTTPException(status_code=404, detail="Activity type not found")
+    await db.activity_types.delete_one({'id': type_id})
+    await db.activity_logs.delete_many({'activity_type_id': type_id})
+    return {"message": "Activity type deleted"}
+
+# ============== ACTIVITY LOG ROUTES ==============
+
+@api_router.get("/activity-logs")
+async def get_activity_logs(
+    activity_type_id: Optional[str] = None,
+    player: Optional[str] = None,
+    location: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    query = {'user_id': current_user['id']}
+    if activity_type_id:
+        query['activity_type_id'] = activity_type_id
+    if player:
+        query['players'] = {'$regex': player, '$options': 'i'}
+    if location:
+        query['location'] = {'$regex': location, '$options': 'i'}
+    
+    logs = await db.activity_logs.find(query, {'_id': 0}).sort('activity_date', -1).to_list(500)
+    
+    # Get activity type names
+    type_ids = list(set(log['activity_type_id'] for log in logs))
+    types = await db.activity_types.find({'id': {'$in': type_ids}}, {'_id': 0}).to_list(100)
+    type_map = {t['id']: t['name'] for t in types}
+    
+    for log in logs:
+        log['activity_type_name'] = type_map.get(log['activity_type_id'], 'Unknown')
+    
+    return logs
+
+@api_router.post("/activity-logs", response_model=ActivityLogResponse)
+async def create_activity_log(data: ActivityLogCreate, current_user: dict = Depends(get_current_user)):
+    # Verify activity type exists
+    activity_type = await db.activity_types.find_one({'id': data.activity_type_id, 'user_id': current_user['id']})
+    if not activity_type:
+        raise HTTPException(status_code=404, detail="Activity type not found")
+    
+    # Limit players to 4
+    players = data.players[:4] if data.players else []
+    
+    log = {
+        'id': str(uuid.uuid4()),
+        'user_id': current_user['id'],
+        'activity_type_id': data.activity_type_id,
+        'activity_date': data.activity_date,
+        'location': data.location,
+        'duration_minutes': data.duration_minutes,
+        'players': players,
+        'created_at': datetime.now(timezone.utc).isoformat()
+    }
+    await db.activity_logs.insert_one(log)
+    del log['_id']
+    log['activity_type_name'] = activity_type['name']
+    return log
+
+@api_router.patch("/activity-logs/{log_id}", response_model=ActivityLogResponse)
+async def update_activity_log(log_id: str, data: ActivityLogUpdate, current_user: dict = Depends(get_current_user)):
+    log = await db.activity_logs.find_one({'id': log_id, 'user_id': current_user['id']})
+    if not log:
+        raise HTTPException(status_code=404, detail="Activity log not found")
+    
+    update_data = {k: v for k, v in data.model_dump().items() if v is not None}
+    if 'players' in update_data:
+        update_data['players'] = update_data['players'][:4]
+    
+    await db.activity_logs.update_one({'id': log_id}, {'$set': update_data})
+    updated = await db.activity_logs.find_one({'id': log_id}, {'_id': 0})
+    
+    activity_type = await db.activity_types.find_one({'id': updated['activity_type_id']})
+    updated['activity_type_name'] = activity_type['name'] if activity_type else 'Unknown'
+    return updated
+
+@api_router.delete("/activity-logs/{log_id}")
+async def delete_activity_log(log_id: str, current_user: dict = Depends(get_current_user)):
+    result = await db.activity_logs.delete_one({'id': log_id, 'user_id': current_user['id']})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Activity log not found")
+    return {"message": "Activity log deleted"}
 
 # Include the router in the main app
 app.include_router(api_router)

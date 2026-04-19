@@ -38,10 +38,27 @@ export const analyticsApi = {
   getHabits: (params = {}) => axios.get(`${API_URL}/analytics/habits`, { params }),
 };
 
+// Activity Types API
+export const activityTypesApi = {
+  getAll: () => axios.get(`${API_URL}/activity-types`),
+  create: (data) => axios.post(`${API_URL}/activity-types`, data),
+  delete: (id) => axios.delete(`${API_URL}/activity-types/${id}`),
+};
+
+// Activity Logs API
+export const activityLogsApi = {
+  getAll: (params = {}) => axios.get(`${API_URL}/activity-logs`, { params }),
+  create: (data) => axios.post(`${API_URL}/activity-logs`, data),
+  update: (id, data) => axios.patch(`${API_URL}/activity-logs/${id}`, data),
+  delete: (id) => axios.delete(`${API_URL}/activity-logs/${id}`),
+};
+
 export default {
   todos: todosApi,
   tags: tagsApi,
   habits: habitsApi,
   habitLogs: habitLogsApi,
   analytics: analyticsApi,
+  activityTypes: activityTypesApi,
+  activityLogs: activityLogsApi,
 };

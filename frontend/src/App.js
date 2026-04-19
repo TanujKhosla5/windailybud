@@ -10,6 +10,7 @@ import OneMinuteClosed from "./pages/OneMinuteClosed";
 import HabitsToday from "./pages/HabitsToday";
 import HabitsProgress from "./pages/HabitsProgress";
 import HabitsManage from "./pages/HabitsManage";
+import Activities from "./pages/Activities";
 import "./App.css";
 
 function ProtectedRoute({ children }) {
@@ -63,6 +64,7 @@ function AppRoutes() {
         <Route path="habits/today" element={<HabitsToday />} />
         <Route path="habits/progress" element={<HabitsProgress />} />
         <Route path="habits/manage" element={<HabitsManage />} />
+        <Route path="activities" element={<Activities />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
