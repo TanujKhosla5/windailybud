@@ -53,7 +53,11 @@ export default function Activities() {
       setActivityTypes(typesRes.data);
       setActivityLogs(logsRes.data);
     } catch (error) {
-      toast.error('Failed to load activities');
+      console.error('Failed to load activities:', error);
+      // Don't show error toast if the endpoint doesn't exist yet
+      if (error.response?.status !== 404) {
+        toast.error('Failed to load activities');
+      }
     } finally {
       setLoading(false);
     }
