@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popove
 import { 
   Plus, 
   Search,
-  Calendar as CalendarIcon,
+  CalendarDays,
   MapPin,
   Clock,
   Users,
@@ -235,7 +235,7 @@ export default function Activities() {
                   <Popover>
                     <PopoverTrigger asChild>
                       <Button variant="outline" className="w-full justify-start text-left font-normal bg-zinc-950 border-zinc-800 text-zinc-400">
-                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        <CalendarDays className="mr-2 h-4 w-4" />
                         {format(newLog.activity_date, 'MMM d, yyyy')}
                       </Button>
                     </PopoverTrigger>
@@ -377,7 +377,7 @@ export default function Activities() {
                         {log.activity_type_name}
                       </span>
                       <span className="text-zinc-400 text-sm flex items-center gap-1">
-                        <CalendarIcon className="w-3 h-3" />
+                        <CalendarDays className="w-3 h-3" />
                         {format(new Date(log.activity_date), 'MMM d, yyyy')}
                       </span>
                     </div>
