@@ -45,22 +45,20 @@ export default function Activities() {
   });
 
   const fetchData = async () => {
+    setLoading(true);
     try {
       const [typesRes, logsRes] = await Promise.all([
         activityTypesApi.getAll(),
         activityLogsApi.getAll()
       ]);
-      setActivityTypes(typesRes.data);
-      setActivityLogs(logsRes.data);
+      setActivityTypes(typesRes.data || []);
+      setActivityLogs(logsRes.data || []);
     } catch (error) {
       console.error('Failed to load activities:', error);
-      // Don't show error toast if the endpoint doesn't exist yet
-      if (error.response?.status !== 404) {
-        toast.error('Failed to load activities');
-      }
-    } finally {
-      setLoading(false);
+      setActivityTypes([]);
+      setActivityLogs([]);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
