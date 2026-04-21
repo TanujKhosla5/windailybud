@@ -9,12 +9,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { Plus, Search, MapPin, Clock, Users, Trash2, X, Trophy } from 'lucide-react';
-import { format } from 'date-fns';
+import { Plus, Search, MapPin, Clock, Users, Trash2, X, Trophy, TrendingUp } from 'lucide-react';
+import { format, startOfMonth, isAfter } from 'date-fns';
 
 export default function Activities() {
   const [activityTypes, setActivityTypes] = useState([]);
   const [activityLogs, setActivityLogs] = useState([]);
+  const [allLogs, setAllLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTypeDialogOpen, setNewTypeDialogOpen] = useState(false);
@@ -39,10 +40,12 @@ export default function Activities() {
       ]);
       setActivityTypes(typesRes.data || []);
       setActivityLogs(logsRes.data || []);
+      setAllLogs(logsRes.data || []);
     } catch (error) {
       console.error('Failed to load activities:', error);
       setActivityTypes([]);
       setActivityLogs([]);
+      setAllLogs([]);
     }
     setLoading(false);
   };
@@ -133,6 +136,38 @@ export default function Activities() {
     newPlayers[index] = value;
     setNewLog({ ...newLog, players: newPlayers });
   };
+
+  // Compute this-month stats from allLogs (stats ignore current search filters)
+  const monthStart = startOfMonth(new Date());
+  const monthLogs = allLogs.filter(l => {
+    const d = new Date(l.activity_date);
+    return isAfter(d, monthStart) || d.getTime() === monthStart.getTime() ||
+      (d.getFullYear() === monthStart.getFullYear() && d.getMonth() === monthStart.getMonth());
+  });
+
+  const totalMinutes = monthLogs.reduce((sum, l) => sum + (l.duration_minutes || 0), 0);
+  const totalHours = (totalMinutes / 60).toFixed(1);
+
+  const byActivity = monthLogs.reduce((acc, l) => {
+    const key = l.activity_type_name || 'Unknown';
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+  const topActivities = Object.entries(byActivity)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 4);
+
+  const playerCounts = monthLogs.reduce((acc, l) => {
+    (l.players || []).forEach(p => {
+      const name = (p || '').trim();
+      if (name) acc[name] = (acc[name] || 0) + 1;
+    });
+    return acc;
+  }, {});
+  const topPartnerEntry = Object.entries(playerCounts).sort((a, b) => b[1] - a[1])[0];
+  const topPartner = topPartnerEntry ? `${topPartnerEntry[0]} (${topPartnerEntry[1]})` : null;
+
+  const monthLabel = format(new Date(), 'MMMM yyyy');
 
   if (loading) {
     return (
@@ -269,6 +304,48 @@ export default function Activities() {
           </Dialog>
         </div>
       </div>
+
+      <Card className="bg-gradient-to-br from-zinc-900 to-zinc-900/50 border-zinc-800" data-testid="activities-stats-card">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-sm text-zinc-400 flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-amber-400" /> This month · {monthLabel}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {monthLogs.length === 0 ? (
+            <p className="text-sm text-zinc-500">No activities logged this month yet. Log one to see your stats.</p>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-1" data-testid="stat-sessions">
+                <p className="text-xs uppercase tracking-wider text-zinc-500">Sessions</p>
+                <p className="text-2xl font-semibold text-zinc-100">{monthLogs.length}</p>
+              </div>
+              <div className="space-y-1" data-testid="stat-hours">
+                <p className="text-xs uppercase tracking-wider text-zinc-500">Total time</p>
+                <p className="text-2xl font-semibold text-zinc-100">
+                  {totalMinutes > 0 ? `${totalHours}h` : '—'}
+                </p>
+              </div>
+              <div className="space-y-1" data-testid="stat-top-activity">
+                <p className="text-xs uppercase tracking-wider text-zinc-500">Top activities</p>
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {topActivities.map(([name, count]) => (
+                    <span key={name} className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 text-xs font-medium">
+                      {name} · {count}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1" data-testid="stat-top-partner">
+                <p className="text-xs uppercase tracking-wider text-zinc-500">Most-frequent partner</p>
+                <p className="text-base font-medium text-zinc-100 truncate">
+                  {topPartner || <span className="text-zinc-500 text-sm font-normal">Solo sessions only</span>}
+                </p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="bg-zinc-900 border-zinc-800">
         <CardHeader className="pb-3">

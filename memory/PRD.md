@@ -17,6 +17,7 @@ WindailyBud is a personal productivity + wellness web app. React (Tailwind + sha
 - Deployment: Render (frontend + backend), custom domain windailybud.com
 
 ## Implemented (Completed)
+- **2026-04-21**: Added Activities monthly stats card — Sessions count, Total hours, Top activities (pills), Most-frequent partner. Computed client-side from unfiltered logs so search filters don't affect it.
 - **2026-04-21**: Fixed Activities page blank-screen crash (RCA: `<SelectItem value="">` invalid in Radix Select → changed to `value="all"` sentinel + updated `handleSearch`/`clearSearch` to treat `all` as no-filter). Verified end-to-end (backend 11/11, full UI flow).
 - **2026-04-21**: Fixed Social category rendering Target/Unit in list views (HabitsManage list card + HabitsToday row). Social habits now show only `Nx/week`.
 - MVP: Auth, Todos (open/closed/1-min, tags, Eisenhower), Habits (Manage/Today/Progress across 8 categories), Activities (types CRUD + logs CRUD + filter search).
