@@ -274,6 +274,7 @@ export default function HabitsToday() {
 
 function HabitRow({ habit, isDone, onComplete, onSkip }) {
   const isSupplementation = habit.category === 'supplementation';
+  const isSocial = habit.category === 'social';
   const hasResponse = isDone !== undefined;
 
   const getTargetDisplay = () => {
@@ -289,7 +290,9 @@ function HabitRow({ habit, isDone, onComplete, onSkip }) {
       <div className="flex items-center justify-between gap-4">
         <div className="flex-1 min-w-0">
           <h4 className="font-medium text-zinc-100">{habit.name}</h4>
-          <p className="text-sm text-zinc-500">Target: {getTargetDisplay()}</p>
+          {!isSocial && (
+            <p className="text-sm text-zinc-500">Target: {getTargetDisplay()}</p>
+          )}
         </div>
         
         <div className="flex items-center gap-2">

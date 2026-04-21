@@ -434,6 +434,8 @@ export default function HabitsManage() {
                                     <span>{habit.water_target} {habit.water_unit || 'ml'}</span>
                                   )}
                                 </>
+                              ) : habit.category === 'social' ? (
+                                <span>{habit.goal_days_per_week}x/week</span>
                               ) : (
                                 <>
                                   <span>{habit.target_per_session} {habit.unit}</span>
