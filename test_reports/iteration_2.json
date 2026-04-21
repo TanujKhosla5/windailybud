@@ -1,0 +1,46 @@
+{
+  "summary": "Activities crash fix verified end-to-end. The <SelectItem value='all'> sentinel fix resolved the React crash. All 11 backend tests passed (activity-types GET/POST, activity-logs CRUD + filter by type/player/location, auth guarding). Full frontend flow verified on preview URL: Activities page renders (no blank screen, 0 page errors), Log Activity dialog opens and creates log (Padel @ Test Arena, 45min, players UIAlice/UIBob) - log card appears, Search filter by player works, Clear (X) button resets, Delete removes log, Add New Sport adds custom type. Social category fix is PARTIAL: the create/edit dialogs correctly hide Target per Session + Unit fields, but the HABIT LIST DISPLAY still shows target_per_session + unit for Social habits in both HabitsManage.jsx and HabitsToday.jsx.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "HabitsManage.jsx habit list card",
+        "issue": "Social category habits still render '<target_per_session> <unit>' (e.g., 'Call Friends - 1 count - 7x/week') in the list view. Spec says these fields must NOT be visible for Social anywhere. The dialogs were fixed but the list card else-branch was not.",
+        "selector": "line 437-442 in /app/frontend/src/pages/HabitsManage.jsx (the else branch that renders <span>{habit.target_per_session} {habit.unit}</span>)",
+        "priority": "HIGH"
+      },
+      {
+        "component": "HabitsToday.jsx HabitRow",
+        "issue": "getTargetDisplay() unconditionally renders 'Target: {target_per_session} {unit}' for non-supplementation habits, including Social. The 'Target:' label with count+unit appears for social habits like Call Friends/Message Friends. Per spec, Target/Unit must NOT be visible for Social.",
+        "selector": "line 279-292 in /app/frontend/src/pages/HabitsToday.jsx (getTargetDisplay and <p>Target: ...</p>)",
+        "priority": "HIGH"
+      }
+    ],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_activities.py",
+    "/app/test_reports/pytest/activities_results.xml"
+  ],
+  "action_items": [
+    "In /app/frontend/src/pages/HabitsManage.jsx around line 437-442, wrap the target_per_session/unit <span> with a condition `habit.category !== 'social'` (similar to how dialog already does).",
+    "In /app/frontend/src/pages/HabitsToday.jsx, hide the 'Target: ...' <p> when habit.category === 'social' (or conditionally render getTargetDisplay only for non-social)."
+  ],
+  "critical_code_review_comments": [
+    "Activities.jsx crash fix (value='all' sentinel) is correct per Radix Select requirements.",
+    "Backend activity-logs endpoint correctly joins activity_type_name via in-memory map; filter regex for player/location is case-insensitive.",
+    "Social category hide rule was applied in 2 of 4 places (create dialog + edit dialog in HabitsManage), but list renderer in HabitsManage and HabitRow in HabitsToday were missed.",
+    "server.py is 856 lines — consider splitting routers per domain (auth, todos, habits, activities) for maintainability."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_activities.py"
+  ],
+  "success_rate": {"backend": "100% (11/11)", "frontend": "90% (Activities flows all pass; Social hide rule partially implemented)"},
+  "test_credentials": "Fresh users created per test via POST /api/auth/register. Sample: test_act_ui_<timestamp>@test.com / Test1234.",
+  "seed_data_creation": "Each fresh user auto-seeds 4 default activity types (Padel/Poker/Pickleball/Squash) and default habits across all categories via seed_default_data().",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Activities page crash is fully resolved. Backend API for activities is 100% green. If retesting after main agent fixes the Social list display bug, verify: (1) HabitsManage.jsx Social tab list cards do NOT show 'X count' next to '7x/week', (2) HabitsToday.jsx rows for Call Friends / Message Friends do NOT render 'Target: 1 count' subtitle, (3) Existing non-social habits still show target+unit correctly.",
+  "rca of the issue": "Original Activities crash RCA: Radix/shadcn Select rejects SelectItem with value=''. Fix (value='all' sentinel + handleSearch/clearSearch updates) confirmed working. Remaining Social P1 bug RCA: the 'hide Target/Unit for Social' rule was only applied in the create + edit dialog conditionals (lines 238 and 524 in HabitsManage.jsx). The list card render (line 437-442) and HabitsToday's HabitRow target display (line 279-292) were not updated to include the same category guard."
+}

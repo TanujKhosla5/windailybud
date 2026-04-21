@@ -19,7 +19,7 @@ export default function Activities() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [newTypeDialogOpen, setNewTypeDialogOpen] = useState(false);
   const [newTypeName, setNewTypeName] = useState('');
-  const [searchActivity, setSearchActivity] = useState('');
+  const [searchActivity, setSearchActivity] = useState('all');
   const [searchPlayer, setSearchPlayer] = useState('');
   const [searchLocation, setSearchLocation] = useState('');
   const [newLog, setNewLog] = useState({
@@ -55,7 +55,7 @@ export default function Activities() {
     setLoading(true);
     try {
       const params = {};
-      if (searchActivity) params.activity_type_id = searchActivity;
+      if (searchActivity && searchActivity !== 'all') params.activity_type_id = searchActivity;
       if (searchPlayer) params.player = searchPlayer;
       if (searchLocation) params.location = searchLocation;
       const res = await activityLogsApi.getAll(params);
@@ -67,7 +67,7 @@ export default function Activities() {
   };
 
   const clearSearch = () => {
-    setSearchActivity('');
+    setSearchActivity('all');
     setSearchPlayer('');
     setSearchLocation('');
     fetchData();
@@ -285,7 +285,7 @@ export default function Activities() {
                   <SelectValue placeholder="All activities" />
                 </SelectTrigger>
                 <SelectContent className="bg-zinc-900 border-zinc-800">
-                  <SelectItem value="">All activities</SelectItem>
+                  <SelectItem value="all">All activities</SelectItem>
                   {activityTypes.map(type => (
                     <SelectItem key={type.id} value={type.id}>{type.name}</SelectItem>
                   ))}
