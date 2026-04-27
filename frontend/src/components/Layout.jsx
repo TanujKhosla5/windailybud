@@ -67,7 +67,7 @@ function isoWeekStart(date = new Date()) {
   return d.toISOString().slice(0, 10);
 }
 
-function AnchorNudge({ onOpen }) {
+function AnchorNudge({ onOpen, variant = 'desktop' }) {
   const { anchor, loaded } = useAnchor();
   if (!loaded) return null;
   if (anchor) {
@@ -75,7 +75,7 @@ function AnchorNudge({ onOpen }) {
       <button
         onClick={onOpen}
         className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-medium hover:bg-amber-500/15 transition-colors"
-        data-testid="anchor-pill-set"
+        data-testid={`anchor-pill-set-${variant}`}
         title="Today's anchor is locked in"
       >
         <Flame className="w-3.5 h-3.5" /> Anchor set
@@ -86,7 +86,7 @@ function AnchorNudge({ onOpen }) {
     <button
       onClick={onOpen}
       className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-xs font-medium hover:border-amber-500/40 hover:text-amber-300 transition-colors"
-      data-testid="anchor-pill-empty"
+      data-testid={`anchor-pill-empty-${variant}`}
     >
       <Flame className="w-3.5 h-3.5" /> Set today's anchor
     </button>
@@ -153,7 +153,7 @@ function LayoutInner() {
         </button>
         <h1 className="font-semibold text-zinc-100">WindailyBud</h1>
         <div className="flex items-center gap-2">
-          <AnchorNudge onOpen={() => setAnchorModalOpen(true)} />
+          <AnchorNudge variant="mobile" onOpen={() => setAnchorModalOpen(true)} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
@@ -210,7 +210,7 @@ function LayoutInner() {
 
           {/* Anchor pill (desktop) */}
           <div className="hidden lg:flex px-4 py-3 border-b border-zinc-800 items-center justify-between">
-            <AnchorNudge onOpen={() => setAnchorModalOpen(true)} />
+            <AnchorNudge variant="desktop" onOpen={() => setAnchorModalOpen(true)} />
             <button
               onClick={() => setWeeklyOpen(true)}
               className="text-zinc-500 hover:text-zinc-300 transition-colors p-1.5 rounded-md hover:bg-zinc-900"

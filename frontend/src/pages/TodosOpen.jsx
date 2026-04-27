@@ -9,7 +9,7 @@ import { Textarea } from '../components/ui/textarea';
 import { Label } from '../components/ui/label';
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '../components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Calendar } from '../components/ui/calendar';
@@ -465,6 +465,9 @@ export default function TodosOpen() {
                 <DialogTitle className="text-zinc-100">
                   {wizardStep === 1 ? 'New task — Step 1 of 2' : wizardStep === 2 ? 'New task — Step 2 of 2' : 'Almost done'}
                 </DialogTitle>
+                <DialogDescription className="sr-only">
+                  Quick task creation: answer two yes/no questions to auto-route the task into the right Eisenhower quadrant.
+                </DialogDescription>
               </DialogHeader>
 
               {/* Step 1: Is it urgent? */}
