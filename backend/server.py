@@ -220,6 +220,18 @@ class ActivityLogResponse(BaseModel):
     players: List[str] = []
     created_at: str
 
+# Daily Anchor Models
+class DailyAnchorSet(BaseModel):
+    anchor_date: str  # YYYY-MM-DD
+    todo_id: str
+
+class DailyAnchorResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    user_id: str
+    anchor_date: str
+    todo_id: str
+    created_at: str
+
 # ============== AUTH HELPERS ==============
 
 def hash_password(password: str) -> str:
@@ -838,6 +850,42 @@ async def delete_activity_log(log_id: str, current_user: dict = Depends(get_curr
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Activity log not found")
     return {"message": "Activity log deleted"}
+
+# ============== DAILY ANCHOR ROUTES ==============
+
+@api_router.get("/daily-anchor")
+async def get_daily_anchor(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    anchor_date = date or datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    anchor = await db.daily_anchors.find_one(
+        {'user_id': current_user['id'], 'anchor_date': anchor_date},
+        {'_id': 0}
+    )
+    return anchor  # null if not set
+
+@api_router.put("/daily-anchor")
+async def set_daily_anchor(data: DailyAnchorSet, current_user: dict = Depends(get_current_user)):
+    # Verify the todo belongs to the user
+    todo = await db.todos.find_one({'id': data.todo_id, 'user_id': current_user['id']})
+    if not todo:
+        raise HTTPException(status_code=404, detail="Todo not found")
+    payload = {
+        'user_id': current_user['id'],
+        'anchor_date': data.anchor_date,
+        'todo_id': data.todo_id,
+        'created_at': datetime.now(timezone.utc).isoformat(),
+    }
+    await db.daily_anchors.update_one(
+        {'user_id': current_user['id'], 'anchor_date': data.anchor_date},
+        {'$set': payload},
+        upsert=True,
+    )
+    return payload
+
+@api_router.delete("/daily-anchor")
+async def clear_daily_anchor(date: Optional[str] = None, current_user: dict = Depends(get_current_user)):
+    anchor_date = date or datetime.now(timezone.utc).strftime('%Y-%m-%d')
+    await db.daily_anchors.delete_one({'user_id': current_user['id'], 'anchor_date': anchor_date})
+    return {"message": "Anchor cleared"}
 
 # Include the router in the main app
 app.include_router(api_router)

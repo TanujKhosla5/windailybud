@@ -53,6 +53,13 @@ export const activityLogsApi = {
   delete: (id) => axios.delete(`${API_URL}/activity-logs/${id}`),
 };
 
+// Daily Anchor API
+export const dailyAnchorApi = {
+  get: (date) => axios.get(`${API_URL}/daily-anchor`, { params: date ? { date } : {} }),
+  set: (anchor_date, todo_id) => axios.put(`${API_URL}/daily-anchor`, { anchor_date, todo_id }),
+  clear: (date) => axios.delete(`${API_URL}/daily-anchor`, { params: date ? { date } : {} }),
+};
+
 export default {
   todos: todosApi,
   tags: tagsApi,
