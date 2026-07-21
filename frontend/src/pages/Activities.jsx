@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Calendar } from '../components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
-import { Plus, Search, MapPin, Clock, Users, Trash2, X, Trophy, TrendingUp } from 'lucide-react';
+import { Plus, Search, MapPin, Clock, Users, Trash2, X, Trophy, TrendingUp, Pencil } from 'lucide-react';
 import { format, startOfMonth, isAfter } from 'date-fns';
 
 export default function Activities() {
@@ -30,6 +30,8 @@ export default function Activities() {
     duration_minutes: '',
     players: ['', '', '', '']
   });
+
+  const [editingLog, setEditingLog] = useState(null); // full log object with parsed date + padded players[4]
 
   const fetchData = async () => {
     setLoading(true);
@@ -129,6 +131,43 @@ export default function Activities() {
     } catch (error) {
       toast.error('Failed to delete activity');
     }
+  };
+
+  const openEditLog = (log) => {
+    const paddedPlayers = [...(log.players || [])];
+    while (paddedPlayers.length < 4) paddedPlayers.push('');
+    setEditingLog({
+      id: log.id,
+      activity_type_id: log.activity_type_id,
+      activity_date: new Date(log.activity_date + 'T00:00:00'),
+      location: log.location || '',
+      duration_minutes: log.duration_minutes ? String(log.duration_minutes) : '',
+      players: paddedPlayers.slice(0, 4),
+    });
+  };
+
+  const handleUpdateLog = async () => {
+    if (!editingLog) return;
+    try {
+      const players = editingLog.players.filter(p => p.trim());
+      await activityLogsApi.update(editingLog.id, {
+        activity_date: format(editingLog.activity_date, 'yyyy-MM-dd'),
+        location: editingLog.location || null,
+        duration_minutes: editingLog.duration_minutes ? parseInt(editingLog.duration_minutes) : null,
+        players,
+      });
+      setEditingLog(null);
+      fetchData();
+      toast.success('Activity updated');
+    } catch (error) {
+      toast.error('Failed to update activity');
+    }
+  };
+
+  const updateEditPlayer = (index, value) => {
+    const newPlayers = [...editingLog.players];
+    newPlayers[index] = value;
+    setEditingLog({ ...editingLog, players: newPlayers });
   };
 
   const updatePlayer = (index, value) => {
@@ -439,20 +478,118 @@ export default function Activities() {
                       )}
                     </div>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleDeleteLog(log.id)}
-                    className="h-8 w-8 text-zinc-500 hover:text-red-400"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => openEditLog(log)}
+                      className="h-8 w-8 text-zinc-500 hover:text-amber-400"
+                      data-testid={`edit-log-${log.id}`}
+                      title="Edit activity"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleDeleteLog(log.id)}
+                      className="h-8 w-8 text-zinc-500 hover:text-red-400"
+                      data-testid={`delete-log-${log.id}`}
+                      title="Delete activity"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Edit Activity Log Dialog */}
+      <Dialog open={!!editingLog} onOpenChange={(v) => { if (!v) setEditingLog(null); }}>
+        <DialogContent className="bg-zinc-900 border-zinc-800 max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-zinc-100">Edit Activity</DialogTitle>
+          </DialogHeader>
+          {editingLog && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-zinc-300">Activity</Label>
+                <div className="mt-1.5 px-3 py-2 rounded-md bg-zinc-950 border border-zinc-800 text-zinc-400 text-sm">
+                  {activityTypes.find(t => t.id === editingLog.activity_type_id)?.name || 'Unknown'}
+                  <span className="ml-2 text-xs text-zinc-600">(activity type cannot be changed)</span>
+                </div>
+              </div>
+
+              <div>
+                <Label className="text-zinc-300">Date *</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start text-left font-normal bg-zinc-950 border-zinc-800 text-zinc-400" data-testid="edit-log-date-btn">
+                      {format(editingLog.activity_date, 'MMM d, yyyy')}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-800">
+                    <Calendar
+                      mode="single"
+                      selected={editingLog.activity_date}
+                      onSelect={(date) => date && setEditingLog({ ...editingLog, activity_date: date })}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div>
+                <Label className="text-zinc-300">Location (optional)</Label>
+                <Input
+                  value={editingLog.location}
+                  onChange={(e) => setEditingLog({ ...editingLog, location: e.target.value })}
+                  placeholder="e.g., City Sports Club"
+                  className="bg-zinc-950 border-zinc-800"
+                  data-testid="edit-log-location"
+                />
+              </div>
+
+              <div>
+                <Label className="text-zinc-300">Duration in minutes (optional)</Label>
+                <Input
+                  type="number"
+                  value={editingLog.duration_minutes}
+                  onChange={(e) => setEditingLog({ ...editingLog, duration_minutes: e.target.value })}
+                  placeholder="e.g., 60"
+                  className="bg-zinc-950 border-zinc-800"
+                  data-testid="edit-log-duration"
+                />
+              </div>
+
+              <div>
+                <Label className="text-zinc-300">Other Players (up to 4)</Label>
+                <div className="space-y-2 mt-2">
+                  {[0, 1, 2, 3].map(index => (
+                    <Input
+                      key={index}
+                      value={editingLog.players[index]}
+                      onChange={(e) => updateEditPlayer(index, e.target.value)}
+                      placeholder={`Player ${index + 1}`}
+                      className="bg-zinc-950 border-zinc-800"
+                      data-testid={`edit-log-player-${index}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setEditingLog(null)} className="border-zinc-700">Cancel</Button>
+                <Button onClick={handleUpdateLog} className="bg-zinc-100 text-zinc-950 hover:bg-zinc-200" data-testid="save-edit-log-btn">
+                  Save changes
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
