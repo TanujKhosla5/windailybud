@@ -18,7 +18,9 @@ WindailyBud is a personal productivity + wellness web app. React (Tailwind + sha
 - Deployment: Render + custom domain windailybud.com
 
 ## Implemented (Completed)
-- **2026-04-27**: ADHD Enhancement Layer (per WindailyBud_ADHD_Brief.pdf) — 7 features shipped end-to-end:
+- **2026-09-12**: Habits "Put on Hold" + "Start Date" features. New `HabitCreate.start_date` (defaults to today) + `HabitUpdate.is_on_hold` / `start_date`; on-hold habits skipped in analytics + Today view; analytics only counts logs on/after `habit.start_date`. Frontend: Hold/Resume icon button per habit card, amber "On Hold" badge, "Tracking since <date>" subtitle, Start Date picker in Create + Edit dialogs, Hold switch in Edit dialog. Backfilled 367 existing habits with `start_date` from `created_at` and `is_on_hold=false`.
+- **2026-04-27**: Edit Activity logs — pencil icon on each log card opens Edit dialog (date, location, duration, players) calling `PATCH /api/activity-logs/{id}`.
+- **2026-04-27**: ADHD Enhancement Layer (7 features) — Daily Anchor, Blitz Mode, Capture-first wizard, Stale pulse, 1-min strip, Weekly reset, Focus toggle. Backend `daily_anchors` collection + `GET/PUT/DELETE /api/daily-anchor`.
   - **P0 Daily Anchor**: Full-screen modal on first open per day; pick existing todo or type new one; flame badge + amber ring on the chosen TodoCard; gentle "Set today's anchor" pill in header (mobile + desktop); per-card "Set as Today's Anchor" dropdown action; localStorage gate so dismissal isn't repeated same day.
   - **P1 Blitz Mode**: 10-min full-screen burst on Do First. One task at a time with Done/Skip; auto-advances queue; Exit button; All-clear screen with Finish.
   - **P1 Capture-first wizard**: Add Task dialog now starts with Step 1 "Is this urgent?" then Step 2 "Is this important?" — auto-routes to correct quadrant. Step 3 confirms with Re-answer link, optional notes/tags, "Show advanced" toggle for tier U1/U2/U3 + dates.

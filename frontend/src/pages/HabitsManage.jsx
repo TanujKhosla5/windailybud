@@ -22,8 +22,14 @@ import {
   Heart,
   Users,
   BookOpen,
-  Droplets
+  Droplets,
+  Pause,
+  Play,
+  Calendar as CalendarIcon
 } from 'lucide-react';
+import { Calendar } from '../components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '../components/ui/popover';
+import { format } from 'date-fns';
 
 const CATEGORY_CONFIG = {
   supplementation: { icon: Pill, color: 'text-amber-400', bg: 'bg-amber-500/10', label: 'Supplementation' },
@@ -68,7 +74,8 @@ export default function HabitsManage() {
     dose_per_tablet: null,
     dose_unit: 'mg',
     water_target: null,
-    water_unit: 'ml'
+    water_unit: 'ml',
+    start_date: new Date()
   });
 
   const fetchHabits = async () => {
@@ -94,7 +101,8 @@ export default function HabitsManage() {
     try {
       await habitsApi.create({
         ...newHabit,
-        category: activeCategory
+        category: activeCategory,
+        start_date: newHabit.start_date ? format(newHabit.start_date, 'yyyy-MM-dd') : null,
       });
       setDialogOpen(false);
       resetForm();
@@ -108,7 +116,12 @@ export default function HabitsManage() {
   const handleUpdate = async () => {
     if (!editingHabit) return;
     try {
-      await habitsApi.update(editingHabit.id, editingHabit);
+      const payload = { ...editingHabit };
+      // Normalize start_date if user picked a Date object
+      if (payload.start_date instanceof Date) {
+        payload.start_date = format(payload.start_date, 'yyyy-MM-dd');
+      }
+      await habitsApi.update(editingHabit.id, payload);
       setEditingHabit(null);
       fetchHabits();
       toast.success('Habit updated');
@@ -122,6 +135,16 @@ export default function HabitsManage() {
       await habitsApi.update(habit.id, { is_active: !habit.is_active });
       fetchHabits();
       toast.success(habit.is_active ? 'Habit paused' : 'Habit activated');
+    } catch (error) {
+      toast.error('Failed to update habit');
+    }
+  };
+
+  const handleToggleHold = async (habit) => {
+    try {
+      await habitsApi.update(habit.id, { is_on_hold: !habit.is_on_hold });
+      fetchHabits();
+      toast.success(habit.is_on_hold ? 'Habit resumed' : 'Habit put on hold');
     } catch (error) {
       toast.error('Failed to update habit');
     }
@@ -147,7 +170,8 @@ export default function HabitsManage() {
       target_days: [...DAYS],
       dose_tablets: null,
       dose_per_tablet: null,
-      dose_unit: 'mg'
+      dose_unit: 'mg',
+      start_date: new Date()
     });
   };
 
@@ -362,6 +386,30 @@ export default function HabitsManage() {
                   </div>
                 </div>
               )}
+
+              <div>
+                <Label className="text-zinc-300">Start Date</Label>
+                <p className="text-xs text-zinc-500 mb-1.5">Tracking begins on this day. Anything before it doesn't count.</p>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-zinc-950 border-zinc-800 text-zinc-400"
+                      data-testid="new-habit-start-date-btn"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {newHabit.start_date ? format(newHabit.start_date, 'MMM d, yyyy') : 'Pick date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-800">
+                    <Calendar
+                      mode="single"
+                      selected={newHabit.start_date}
+                      onSelect={(date) => date && setNewHabit({ ...newHabit, start_date: date })}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
               
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => { setDialogOpen(false); resetForm(); }} className="border-zinc-700">
@@ -408,7 +456,7 @@ export default function HabitsManage() {
                 </Card>
               ) : (
                 filteredHabits.map(habit => (
-                  <Card key={habit.id} className={`bg-zinc-900 border-zinc-800 ${!habit.is_active ? 'opacity-50' : ''}`}>
+                  <Card key={habit.id} className={`bg-zinc-900 border-zinc-800 ${!habit.is_active ? 'opacity-50' : ''} ${habit.is_on_hold ? 'border-amber-500/40' : ''}`}>
                     <CardContent className="py-4">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center gap-4 flex-1 min-w-0">
@@ -418,7 +466,17 @@ export default function HabitsManage() {
                             data-testid={`habit-active-${habit.id}`}
                           />
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-medium text-zinc-100 truncate">{habit.name}</h3>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="font-medium text-zinc-100 truncate">{habit.name}</h3>
+                              {habit.is_on_hold && (
+                                <span
+                                  className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 text-[10px] font-bold uppercase tracking-wider"
+                                  data-testid={`habit-on-hold-badge-${habit.id}`}
+                                >
+                                  <Pause className="w-2.5 h-2.5" /> On Hold
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-3 text-sm text-zinc-500">
                               {habit.category === 'supplementation' ? (
                                 <>
@@ -459,10 +517,25 @@ export default function HabitsManage() {
                                 ))}
                               </div>
                             )}
+                            {habit.start_date && (
+                              <p className="text-[11px] text-zinc-600 mt-1.5">
+                                Tracking since {format(new Date(habit.start_date + 'T00:00:00'), 'MMM d, yyyy')}
+                              </p>
+                            )}
                           </div>
                         </div>
                         
                         <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleToggleHold(habit)}
+                            className={`h-8 w-8 ${habit.is_on_hold ? 'text-emerald-400 hover:text-emerald-300' : 'text-zinc-500 hover:text-amber-400'}`}
+                            data-testid={`hold-habit-${habit.id}`}
+                            title={habit.is_on_hold ? 'Resume habit' : 'Put on hold'}
+                          >
+                            {habit.is_on_hold ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                          </Button>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -650,6 +723,57 @@ export default function HabitsManage() {
                   </div>
                 </div>
               )}
+
+              <div>
+                <Label className="text-zinc-300">Start Date</Label>
+                <p className="text-xs text-zinc-500 mb-1.5">
+                  Reset this to today (or a future date) to ignore past missed days.
+                </p>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-start text-left font-normal bg-zinc-950 border-zinc-800 text-zinc-400"
+                      data-testid="edit-habit-start-date-btn"
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editingHabit.start_date
+                        ? format(
+                            editingHabit.start_date instanceof Date
+                              ? editingHabit.start_date
+                              : new Date(editingHabit.start_date + 'T00:00:00'),
+                            'MMM d, yyyy'
+                          )
+                        : 'Pick date'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-zinc-900 border-zinc-800">
+                    <Calendar
+                      mode="single"
+                      selected={
+                        editingHabit.start_date instanceof Date
+                          ? editingHabit.start_date
+                          : editingHabit.start_date
+                          ? new Date(editingHabit.start_date + 'T00:00:00')
+                          : new Date()
+                      }
+                      onSelect={(date) => date && setEditingHabit({ ...editingHabit, start_date: date })}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2.5">
+                <div>
+                  <p className="text-sm text-zinc-200 font-medium">Put on Hold</p>
+                  <p className="text-xs text-zinc-500">Skip tracking (e.g., during vacation). Resume anytime.</p>
+                </div>
+                <Switch
+                  checked={!!editingHabit.is_on_hold}
+                  onCheckedChange={(v) => setEditingHabit({ ...editingHabit, is_on_hold: v })}
+                  data-testid="edit-habit-hold-switch"
+                />
+              </div>
               
               <div className="flex justify-end gap-2 pt-2">
                 <Button variant="outline" onClick={() => setEditingHabit(null)} className="border-zinc-700">

@@ -124,6 +124,7 @@ class HabitCreate(BaseModel):
     dose_unit: Optional[str] = None
     water_target: Optional[float] = None
     water_unit: Optional[str] = None
+    start_date: Optional[str] = None  # YYYY-MM-DD, defaults to today on server
 
 class HabitUpdate(BaseModel):
     name: Optional[str] = None
@@ -132,6 +133,8 @@ class HabitUpdate(BaseModel):
     target_per_session: Optional[float] = None
     target_days: Optional[List[str]] = None
     is_active: Optional[bool] = None
+    is_on_hold: Optional[bool] = None
+    start_date: Optional[str] = None
     dose_tablets: Optional[int] = None
     dose_per_tablet: Optional[float] = None
     dose_unit: Optional[str] = None
@@ -146,6 +149,8 @@ class HabitResponse(BaseModel):
     name: str
     is_default: bool
     is_active: bool
+    is_on_hold: bool = False
+    start_date: Optional[str] = None
     goal_days_per_week: int
     unit: str
     target_per_session: float
@@ -340,6 +345,8 @@ async def seed_default_data(user_id: str):
                     'name': habit_data['name'],
                     'is_default': True,
                     'is_active': True,
+                    'is_on_hold': False,
+                    'start_date': datetime.now(timezone.utc).strftime('%Y-%m-%d'),
                     'goal_days_per_week': 7,
                     'unit': habit_data['unit'],
                     'target_per_session': habit_data['target_per_session'],
@@ -440,7 +447,7 @@ async def create_todo(todo_data: TodoCreate, current_user: dict = Depends(get_cu
 
 @api_router.get("/todos", response_model=List[TodoResponse])
 async def get_todos(
-    status: Optional[str] = None,
+    status: Optional[str] = None,  # noqa: F811 - query param intentionally shadows fastapi.status
     is_one_minute: Optional[bool] = None,
     current_user: dict = Depends(get_current_user)
 ):
@@ -537,6 +544,7 @@ async def get_habits(category: Optional[str] = None, current_user: dict = Depend
 @api_router.post("/habits", response_model=HabitResponse)
 async def create_habit(habit_data: HabitCreate, current_user: dict = Depends(get_current_user)):
     now = datetime.now(timezone.utc).isoformat()
+    today = datetime.now(timezone.utc).strftime('%Y-%m-%d')
     habit = {
         'id': str(uuid.uuid4()),
         'user_id': current_user['id'],
@@ -544,6 +552,8 @@ async def create_habit(habit_data: HabitCreate, current_user: dict = Depends(get
         'name': habit_data.name,
         'is_default': False,
         'is_active': True,
+        'is_on_hold': False,
+        'start_date': habit_data.start_date or today,
         'goal_days_per_week': habit_data.goal_days_per_week,
         'unit': habit_data.unit,
         'target_per_session': habit_data.target_per_session,
@@ -686,7 +696,14 @@ async def get_habit_analytics(
     category_scores = {}
     
     for habit in habits:
+        # Skip habits on hold — they're paused and shouldn't affect scores
+        if habit.get('is_on_hold'):
+            continue
         habit_logs = logs_by_habit.get(habit['id'], [])
+        # Only count logs on/after the habit's start_date so historical missed days don't count
+        habit_start = habit.get('start_date')
+        if habit_start:
+            habit_logs = [l for l in habit_logs if l.get('log_date', '') >= habit_start]
         days_completed = len([l for l in habit_logs if l['is_done']])
         days_targeted = habit['goal_days_per_week']
         

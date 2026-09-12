@@ -104,9 +104,12 @@ export default function HabitsToday() {
     return logs.find(l => l.habit_id === habitId);
   };
 
-  // Filter habits that are active and targeted for this day
-  const filteredHabits = habits.filter(h => 
-    h.is_active && h.target_days.includes(dayName)
+  // Filter habits that are active, not on hold, whose start_date is on/before selected day, and targeted for this day
+  const filteredHabits = habits.filter(h =>
+    h.is_active &&
+    !h.is_on_hold &&
+    (!h.start_date || h.start_date <= dateStr) &&
+    h.target_days.includes(dayName)
   );
 
   // Group by category
